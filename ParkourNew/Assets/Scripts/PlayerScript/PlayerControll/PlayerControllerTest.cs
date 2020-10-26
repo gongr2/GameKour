@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Runtime.CompilerServices;
+﻿//using System;
+//using System.Collections;
+//using System.Runtime.CompilerServices;
 using Photon.Pun;
-using Photon.Pun.UtilityScripts;
+//using Photon.Pun.UtilityScripts;
+//using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
+//using UnityEngine.UIElements;
 
 namespace Parkour
 {
@@ -115,6 +116,8 @@ namespace Parkour
         private float DistanceX;
         private float DistanceY;
         private float DistanceZ;
+        private GameObject Edge;
+        private Vector3 GrabOffset;
         private void Awake()
         {
             wallrun = GetComponent<WallRunMovement>();
@@ -194,11 +197,12 @@ namespace Parkour
                     Dashing();
                     break;
                 case PlayerState.Hanging:
+                    AbletoGrab = false;
+                    HangingStable();
                     Rigidbody.velocity = Vector3.zero;
                     CurrentSpeed = 0;
                     PullUp();
                     PullDown();
-                    Hanging();
                     break;
                 case PlayerState.Lifting:
                     Throw();
@@ -255,7 +259,10 @@ namespace Parkour
         {
             if (Grounded)
             {
-                Rigidbody.AddForce(transform.up * jumpForce);
+                if (Rigidbody != null)
+                {
+                    Rigidbody.AddForce(transform.up * jumpForce);
+                }
             }
         }
         public void CheckAirState()
@@ -515,42 +522,76 @@ namespace Parkour
 
         void Hanging()
         {
-            bool AbletoGrabRight = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * 0.2f, transform.forward, RayDistance);
-            bool AbletoGrabLeft = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * -0.2f, transform.forward, RayDistance);
+            //bool AbletoGrabRight = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * 0.2f, transform.forward, RayDistance);
+            //bool AbletoGrabLeft = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * -0.2f, transform.forward, RayDistance);
+            Vector3 DetectCenter1 = transform.position + transform.forward * 0.25f + transform.up * 2.4f + transform.right * -0.25f;
+            Vector3 DetectCenter2 = transform.position + transform.forward * 0.25f + transform.up * 2.4f + transform.right * 0.25f;
+            Vector3 DetectSize = new Vector3(0.2f, 0.3f, 0.25f);
+            Collider[] grabLeft = Physics.OverlapBox(DetectCenter1, DetectSize, transform.rotation, 1 << 9);
+            Collider[] grabRight = Physics.OverlapBox(DetectCenter2, DetectSize, transform.rotation, 1 << 9);
+            bool AbletoGrabRight = grabRight.Length >= 1;
+            bool AbletoGrabLeft = grabLeft.Length >= 1;
             AbletoGrab = AbletoGrabRight && AbletoGrabLeft;
+            if (AbletoGrab)
+            {
+                Edge = grabLeft[0].gameObject;
+            }
             //AbletoGrab = Physics.OverlapBox(transform.position + transform.up * up + transform.forward * forward, new Vector3(0.5f, 0.1f, 0.1f), transform.rotation).Length > 1;
-
             Grab = AbletoGrab && Input.Grab;
             if (Grab)
             {
+                Vector3 Direction = Edge.transform.position - transform.position;
+                Vector3 Offset = Vector3.Project(Direction, Edge.transform.right);
+                transform.rotation = Edge.transform.rotation;
+                GrabOffset = Edge.transform.up * -2.3f + Edge.transform.forward * (-0.1f) - Offset;
+                this.transform.position = Edge.transform.position + GrabOffset;
                 State = PlayerState.Hanging;
+
             }
+        }
+
+        void HangingStable()
+        {
+
+            if (Edge != null && Grab)
+            {
+                transform.position = Edge.transform.position + GrabOffset;
+            }
+
         }
         void PullUp()
         {
 
             UpTheWall = Input.PullUp;
+            if (UpTheWall)
+            {
+                Grab = false;
+            }
         }
         void PullDown()
         {
             if (Input.PullDown)
             {
+                Grab = false;
                 FinishPullUp();
             }
         }
         public void FixPullUp()
         {
-
-            transform.position = transform.position + transform.forward * -0.3f;
-
+            if (Edge != null)
+            {
+                transform.position = Edge.transform.position + GrabOffset + transform.forward * -0.3f;
+            }
             cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 3f, 0), 5f * Time.deltaTime);
 
         }
 
         public void TeleportPlayer()
         {
-            transform.position = transform.position + transform.forward * 0.4f + transform.up * 2.3f;
-
+            if (Edge != null)
+            {
+                transform.position = Edge.transform.position + GrabOffset + transform.forward * 0.4f + transform.up * 2.3f;
+            }
         }
 
         public void FinishPullUp()
@@ -558,7 +599,10 @@ namespace Parkour
 
             State = PlayerState.NORMAL;
             CurrentSpeed = 0;
-            Rigidbody.velocity = Vector3.zero;
+            if (Rigidbody != null)
+            {
+                Rigidbody.velocity = Vector3.zero;
+            }
             cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, 0), 5f * Time.deltaTime);
 
         }
