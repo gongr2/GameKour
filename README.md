@@ -4,7 +4,7 @@ Please check [ChangeLog (Weekly)](https://github.com/Vanderbilt-VR-2020/Parkour/
 Please check [Multi-player Experience Description](https://github.com/Vanderbilt-VR-2020/Parkour/blob/main/Multi-player%20Experience%20Description.md) for our game's multiplayer experience.
 
 ## Instruction to Open the Project:
-1. Clone the Parkour project from Github with URL https://github.com/Vanderbilt-VR-2020/Parkour.git
+1. Clone the Parkour project from Github with URL https://github.com/gongr2/GameKour.git
 
 1. Open the file with Unity
 
