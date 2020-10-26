@@ -28,4 +28,4 @@
 * **GOING THROUGH** star and diamond objects for special abilities.
 * **SPACE + TAB** for rocket jet (diamond object).
 * **KEEP RUNNING** for faster sprint (star object).
-* **Getting Close To A Floating Panel + G + W** to climb on the panel that is a slightly higher than you (This is still under testing, only one side of the wall can be climbed, and you may encounter bugs).
+* **Getting Close To A Floating Panel + G + W** to climb on the panel that is slightly higher than you (This is still under testing, only one side of the walls can be climbed, and you may encounter bugs).
