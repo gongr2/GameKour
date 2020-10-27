@@ -27,6 +27,9 @@ Please check [Multi-player Experience Description](https://github.com/Vanderbilt
 
 ## Role Distribution:
 Leo: Map Design + Map Implementation + Documentation
+
 Amy: Map elements + Animation
-Shenxin: Photon synchronize + Network + Tech Support 
-Alex:  Character ability + Pick-up tools + Map
+
+Shenxin: Photon synchronize + Network + Tech Support
+
+Alex: Character ability + Pick-up tools + Map
