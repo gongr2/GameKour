@@ -24,3 +24,9 @@ Please check [Multi-player Experience Description](https://github.com/Vanderbilt
 1. The map implementation is still in progress
 
 **IMPORTANT NOTE:** Game mode selection is being developed right now. So for now, to change game mode, click scripts -> launcher.cs -> find a method called StartGame() at the end -> Change the number in PhotonNetwork.loadLevel() -> PhotonNetwork.loadLevel(1) is the default game scene, PhotonNetwork.loadLevel(2) is the hide and seek mode.
+
+## Role Distribution:
+Leo: Map Design + Map Implementation + Documentation
+Amy: Map elements + Animation
+Shenxin: Photon synchronize + Network + Tech Support 
+Alex:  Character ability + Pick-up tools + Map
