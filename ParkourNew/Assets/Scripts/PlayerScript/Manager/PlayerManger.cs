@@ -52,7 +52,7 @@ public class PlayerManger : MonoBehaviour
     // Update is called once per frame
     private void RandomValueGenerator()
     {
-         Zpos = Random.Range(Mathf.Min(RightBound.x,LeftBound.x), Mathf.Max(RightBound.x, LeftBound.x));
-         Xpos = Random.Range(Mathf.Min(RightBound.y, LeftBound.y), Mathf.Max(RightBound.y, LeftBound.y));
+         Zpos = Random.Range(Mathf.Min(RightBound.z, LeftBound.z), Mathf.Max(RightBound.z, LeftBound.z));
+         Xpos = Random.Range(Mathf.Min(RightBound.x, LeftBound.x), Mathf.Max(RightBound.x, LeftBound.x));
     }
 }
