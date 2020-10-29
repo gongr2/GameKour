@@ -1,10 +1,14 @@
 ﻿//using System;
 //using System.Collections;
 //using System.Runtime.CompilerServices;
+using Microsoft.Win32.SafeHandles;
 using Photon.Pun;
+using System.ComponentModel;
+using UnityEditor.UIElements;
 //using Photon.Pun.UtilityScripts;
 //using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UIElements;
 //using UnityEngine.UIElements;
 
 namespace Parkour
@@ -31,7 +35,8 @@ namespace Parkour
             public bool PickUp;
             public bool Throw;
             public bool Charging;
-            public float LiftDirection;
+            public bool Climb;
+            public float ClimbUp;
         }
         public enum PlayerState
         {
@@ -42,7 +47,9 @@ namespace Parkour
             Sonic,
             Hanging,
             Trans,
-            Lifting
+            Lifting,
+            Climbing,
+            Vaulting
         }
         //This will be useful in future
         public enum AirState
@@ -112,12 +119,24 @@ namespace Parkour
         public float PushForce = 0;
         public float MaxForce = 1000;
         public bool Charged;
-        private Vector3 ObjectDistance;
         private float DistanceX;
         private float DistanceY;
         private float DistanceZ;
         private GameObject Edge;
         private Vector3 GrabOffset;
+        // Then all of this code is related to "Climb"
+        public bool AbleToClimb;
+        public bool Climb;
+        private GameObject Ladder;
+        private Vector3 ClimbOffset;
+        private float ClimbSpeed=0.3f;
+        private Vector3 VaultOffset;
+
+        //All of this is related to Vaulting
+
+        public bool AbleToVault;
+        public bool Vault;
+        private GameObject VaultObject;
         private void Awake()
         {
             wallrun = GetComponent<WallRunMovement>();
@@ -153,6 +172,10 @@ namespace Parkour
             CharacterAnimator.SetBool("UpTheWall", UpTheWall);
             CharacterAnimator.SetBool("DownTheWall", Input.PullDown);
             CharacterAnimator.SetBool("CarryingObject", State == PlayerState.Lifting);
+            CharacterAnimator.SetFloat("ClimbUp",Input.ClimbUp);
+            CharacterAnimator.SetBool("Climb", Climb);
+            CharacterAnimator.SetBool("ClimbQuit", Input.Jump);
+            CharacterAnimator.SetBool("Vaulting", Vault);
         }
 
 
@@ -180,6 +203,8 @@ namespace Parkour
                     NeoMove();
                     Hanging();
                     Slide();
+                    Climbing();
+                    Vaulting();
                     break;
 
                 case PlayerState.NORMAL:
@@ -191,6 +216,8 @@ namespace Parkour
                     Hanging();
                     PickUp();
                     Slide();
+                    Climbing();
+                    Vaulting();
                     break;
 
                 case PlayerState.Dash:
@@ -203,6 +230,9 @@ namespace Parkour
                     CurrentSpeed = 0;
                     PullUp();
                     PullDown();
+                    if (Grab) {
+                        cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, 0), 5f * Time.deltaTime);
+                    }
                     break;
                 case PlayerState.Lifting:
                     Throw();
@@ -215,13 +245,29 @@ namespace Parkour
                         Item.gameObject.transform.localPosition = new Vector3(DistanceX, DistanceY, DistanceZ);
                     }
                     break;
+                case PlayerState.Climbing:
+                    Grounded = Physics.OverlapBox(transform.position, new Vector3(0.2f, 0.2f, 0.2f)).Length > 1;
+                    Rigidbody.velocity = Vector3.zero;
+                    CurrentSpeed = 0;
+                    ClimbUp();
+                    ClimbQuit();
+                    ClimbingUp();
+                    cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, -3), 5f * Time.deltaTime);
+                    verticalLookRotation = Mathf.Clamp(verticalLookRotation, -90f, 90f);
+                    cameraHolder.transform.localEulerAngles = Vector3.left * verticalLookRotation;
+                    break;
+                case PlayerState.Vaulting:
+
+
+
+                    break;
 
 
             }
 
 
-            Rigidbody.useGravity = State == PlayerState.NORMAL || State == PlayerState.Sonic || State == PlayerState.Lifting;
-            MainCollider.enabled = State == PlayerState.NORMAL || State == PlayerState.Dash || State == PlayerState.Sonic || State == PlayerState.Lifting;
+            Rigidbody.useGravity = State == PlayerState.NORMAL || State == PlayerState.Sonic || State == PlayerState.Lifting || State == PlayerState.Vaulting;
+            MainCollider.enabled = State == PlayerState.NORMAL || State == PlayerState.Dash || State == PlayerState.Sonic || State == PlayerState.Lifting||State==PlayerState.Vaulting;
             //Rigidbody.MovePosition(Rigidbody.position + transform.TransformDirection(moveAmount) * Time.fixedDeltaTime);
         }
 
@@ -513,8 +559,120 @@ namespace Parkour
             }
         }
 
+        //Check Vaulting
+
+        void Vaulting()
+        {
+            if (!Grounded) {
+                return;
+            }
+
+            Vector3 DetectCenter = transform.position + transform.forward * 0.5f + transform.up * 0.6f;
+            Vector3 DetectSize = new Vector3(0.8f, 1f, 0.6f);
+            Collider[] VaultObjects = Physics.OverlapBox(DetectCenter, DetectSize, transform.rotation, 1 << 11);
+            AbleToVault = VaultObjects.Length >= 1;
+            if (AbleToVault)
+            {
+               VaultObject = VaultObjects[0].gameObject;
+            }
+            
+            Vault = AbleToVault && Input.Grab;
+            if (Vault)
+            {
+                
+                Vector3 Direction = VaultObject.transform.position - transform.position;
+                Vector3 Offset = Vector3.Project(Direction, VaultObject.transform.right);
+                //transform.rotation = VaultObject.transform.rotation;
+                VaultOffset = -Offset;
+                State = PlayerState.Vaulting;
+            }
+            
+        }
+
+        public void FixVaultingUp() {
+            if (VaultObject != null)
+            {
+                //transform.position =Vector3.Lerp(transform.position,VaultOffset + VaultObject.transform.position+VaultObject.transform.up*VaultObject.transform.localScale.y,Time.deltaTime);
+                transform.position = VaultOffset + VaultObject.transform.position + VaultObject.transform.up * VaultObject.transform.localScale.y ;
+                cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, -2), 5f * Time.deltaTime);
+            }
+        }
 
 
+        public void FinishVaultingUp()
+        {
+            print("Finish the PullUp");
+            State = PlayerState.NORMAL;
+            Vault = false;
+            CurrentSpeed = SpeedValue;
+            cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, 0), 5f * Time.deltaTime);
+
+        }
+
+        // check wall climbing 
+        void Climbing()
+        {
+
+            Vector3 DetectCenter = transform.position + transform.forward * 0.5f + transform.up * 1.6f;
+            Vector3 DetectSize = new Vector3(0.8f, 1f, 0.6f);
+            Collider[] Grab = Physics.OverlapBox(DetectCenter, DetectSize, transform.rotation, 1 << 10);
+            AbleToClimb = Grab.Length >= 1;
+            if (AbleToClimb)
+            {
+                Ladder = Grab[0].gameObject;
+            }
+            Climb = AbleToClimb && Input.Climb;
+            if (Climb)
+            {
+                print("Climbing");
+                Vector3 Direction = Ladder.transform.position - transform.position;
+                Vector3 Offset = Vector3.Project(Direction, Ladder.transform.up);
+                transform.rotation = Ladder.transform.rotation;
+                this.transform.position = Ladder.transform.position-Offset+Ladder.transform.forward*-0.4f;
+                ClimbOffset= Ladder.transform.position - Offset + Ladder.transform.forward * -0.4f;
+                Rigidbody.velocity = Vector3.zero;
+                State = PlayerState.Climbing;
+
+            }
+        }
+
+        void ClimbUp() {
+            if (Input.ClimbUp > 0.2f || Input.ClimbUp < -0.2f) {
+                transform.position = Vector3.Lerp(transform.position,new Vector3(ClimbOffset.x,transform.position.y+Input.ClimbUp*ClimbSpeed,ClimbOffset.z), Time.deltaTime*2.5f);
+
+            }
+        }
+        void ClimbQuit() {
+            if (Input.Jump) {
+                Climb = false;
+                Ladder = null;
+                Grab = false;
+                Edge = null;
+                State = PlayerState.NORMAL;
+            }
+        }
+        void ClimbingUp() {
+            Vector3 DetectCenter = transform.position + transform.forward * 0.5f + transform.up * 1.6f;
+            Vector3 DetectSize = new Vector3(0.8f, 1f, 0.6f);
+            Collider[] Grabing = Physics.OverlapBox(DetectCenter, DetectSize, transform.rotation, 1 << 9);
+            AbletoGrab = Grabing.Length >= 1;
+            if (AbletoGrab)
+            {
+                Edge = Grabing[0].gameObject;
+            }
+            Grab = AbletoGrab;
+            if (Edge != null&&Grab)
+            {
+                Ladder = null;
+                Climb = false;
+                Vector3 Direction = Edge.transform.position - transform.position;
+                Vector3 Offset = Vector3.Project(Direction, Edge.transform.right);
+                transform.rotation = Edge.transform.rotation;
+                GrabOffset = Edge.transform.up * -2.3f + Edge.transform.forward * (-0.1f) - Offset;
+                this.transform.position = Edge.transform.position + GrabOffset;
+                State = PlayerState.Hanging;
+            }
+        }
 
 
 
@@ -522,8 +680,6 @@ namespace Parkour
 
         void Hanging()
         {
-            //bool AbletoGrabRight = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * 0.2f, transform.forward, RayDistance);
-            //bool AbletoGrabLeft = Physics.Raycast(transform.position + transform.up * up + transform.forward * forward + transform.right * -0.2f, transform.forward, RayDistance);
             Vector3 DetectCenter1 = transform.position + transform.forward * 0.25f + transform.up * 2.4f + transform.right * -0.25f;
             Vector3 DetectCenter2 = transform.position + transform.forward * 0.25f + transform.up * 2.4f + transform.right * 0.25f;
             Vector3 DetectSize = new Vector3(0.2f, 0.3f, 0.25f);
@@ -546,9 +702,9 @@ namespace Parkour
                 GrabOffset = Edge.transform.up * -2.3f + Edge.transform.forward * (-0.1f) - Offset;
                 this.transform.position = Edge.transform.position + GrabOffset;
                 State = PlayerState.Hanging;
-
             }
         }
+
 
         void HangingStable()
         {
@@ -578,8 +734,10 @@ namespace Parkour
         }
         public void FixPullUp()
         {
+            print("FixPullUp");
             if (Edge != null)
             {
+                print("FixPullUpProve");
                 transform.position = Edge.transform.position + GrabOffset + transform.forward * -0.3f;
             }
             cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 3f, 0), 5f * Time.deltaTime);
@@ -590,14 +748,17 @@ namespace Parkour
         {
             if (Edge != null)
             {
+                print("Teleport the Player to right position");
                 transform.position = Edge.transform.position + GrabOffset + transform.forward * 0.4f + transform.up * 2.3f;
             }
         }
 
         public void FinishPullUp()
         {
-
+            print("Finish the PullUp");
             State = PlayerState.NORMAL;
+            Edge = null;
+            UpTheWall = false;
             CurrentSpeed = 0;
             if (Rigidbody != null)
             {

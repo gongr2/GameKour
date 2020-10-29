@@ -1,11 +1,11 @@
 fileFormatVersion: 2
-guid: e2854d1588654e243ab5d76b07148ab6
+guid: df676593bb9cbc64e8228eab16b86e2a
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable:
   - first:
       74: -203655887218126122
-    second: Braced Hang To Crouch Begin
+    second: Vaulting
   externalObjects: {}
   materials:
     materialImportMode: 1
@@ -35,11 +35,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Braced Hang To Crouch Begin
+      name: Vaulting
       takeName: mixamo.com
       internalID: 0
-      firstFrame: 0
-      lastFrame: 34
+      firstFrame: 7
+      lastFrame: 30
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -51,7 +51,7 @@ ModelImporter:
       loopBlendOrientation: 1
       loopBlendPositionY: 0
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 1
+      keepOriginalOrientation: 0
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
       heightFromFeet: 0
