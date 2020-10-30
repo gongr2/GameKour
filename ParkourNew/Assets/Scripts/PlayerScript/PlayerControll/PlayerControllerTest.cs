@@ -40,7 +40,6 @@ namespace Parkour
         public enum PlayerState
         {
             NORMAL,
-            WallRunning,
             Dash,
             Mutant,
             Sonic,
@@ -80,7 +79,6 @@ namespace Parkour
         Vector3 moveDirection;
         public float Rotation;
         public float CurrentSpeed;
-        protected WallRunMovement wallrun;
         public bool Grounded = true;
         public float currentCoolDown;
         public float TotalTime;
@@ -138,7 +136,6 @@ namespace Parkour
         private GameObject VaultObject;
         private void Awake()
         {
-           // wallrun = GetComponent<WallRunMovement>();
             Rigidbody = GetComponent<Rigidbody>();
             CharacterAnimator = GetComponentInChildren<Animator>();
             MainCollider = GetComponent<CapsuleCollider>();
@@ -779,25 +776,6 @@ namespace Parkour
             cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 1.7f, 0), 5f * Time.deltaTime);
 
         }
-
-        // specialSkills___WallRun
-       // void WallRun()
-       // {
-       //
-       //     if (Input.WallRun)
-       //     {
-       //         wallrun.ActivateWallRun = true;
-       //     }
-       //     else
-       //     {
-       //
-       //         wallrun.ActivateWallRun = false;
-       //
-       //     }
-       //     cameraHolder.transform.Rotate(0, 0, wallrun.curCamAngle);
-
-        //}
-        //Special Skills__ Dash
 
 
         void Dash()

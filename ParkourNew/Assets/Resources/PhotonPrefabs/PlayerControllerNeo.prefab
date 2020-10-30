@@ -521,9 +521,6 @@ MonoBehaviour:
     Name: Rotation
   - Type: 4
     SynchronizeType: 2
-    Name: IsWallRunning
-  - Type: 4
-    SynchronizeType: 2
     Name: Dash
   - Type: 4
     SynchronizeType: 2
@@ -561,7 +558,7 @@ MonoBehaviour:
   m_SynchronizeLayers:
   - SynchronizeType: 2
     LayerIndex: 0
-  - SynchronizeType: 2
+  - SynchronizeType: 1
     LayerIndex: 1
 --- !u!1 &3220101368270621049
 GameObject:
