@@ -15,6 +15,9 @@ namespace Parkour
         protected float LookXVel;
         protected float LookZVel;
         public GameObject orientation;
+        public ParticleSystem SpeedLine;
+        public ParticleSystem SprintEffect;
+
 
         private void Awake()
         {
@@ -30,6 +33,8 @@ namespace Parkour
                 Destroy(GetComponentInChildren<Camera>().gameObject);
                 Destroy(GetComponentInChildren<Rigidbody>());
                 Destroy(orientation.gameObject);
+                Destroy(SpeedLine);
+                Destroy(SprintEffect);
             }
         }
     }

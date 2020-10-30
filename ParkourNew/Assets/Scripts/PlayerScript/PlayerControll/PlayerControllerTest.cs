@@ -24,7 +24,7 @@ namespace Parkour
             public float RunZ;
             public bool Jump;
             public bool Sprint;
-            public bool WallRun;
+            //public bool WallRun;
             public bool Dash;
             public bool Jet;
             public bool Slide;
@@ -99,12 +99,12 @@ namespace Parkour
         public ParticleSystem FlashEffect;
         public PhotonView PV;
         //Do we have anythign to grab
-        public bool Grab;
-        public bool AbletoGrab;
-        public bool UpTheWall;
-        public float RayDistance;
-        public float forward;
-        public float up;
+        private bool Grab;
+        private bool AbletoGrab;
+        private bool UpTheWall;
+        private float RayDistance;
+        private float forward;
+        private float up;
         // This all of this are variable that gonna be used in the pickup and throw 
         public float PickupDistance;
         public bool carryObject;
@@ -124,8 +124,8 @@ namespace Parkour
         private GameObject Edge;
         private Vector3 GrabOffset;
         // Then all of this code is related to "Climb"
-        public bool AbleToClimb;
-        public bool Climb;
+        private bool AbleToClimb;
+        private bool Climb;
         private GameObject Ladder;
         private Vector3 ClimbOffset;
         private float ClimbSpeed=0.3f;
@@ -133,12 +133,12 @@ namespace Parkour
 
         //All of this is related to Vaulting
 
-        public bool AbleToVault;
-        public bool Vault;
+        private bool AbleToVault;
+        private bool Vault;
         private GameObject VaultObject;
         private void Awake()
         {
-            wallrun = GetComponent<WallRunMovement>();
+           // wallrun = GetComponent<WallRunMovement>();
             Rigidbody = GetComponent<Rigidbody>();
             CharacterAnimator = GetComponentInChildren<Animator>();
             MainCollider = GetComponent<CapsuleCollider>();
@@ -163,7 +163,6 @@ namespace Parkour
             CharacterAnimator.SetFloat("Rotation", Rotation);
             CharacterAnimator.SetFloat("Speed", CurrentSpeed);
             CharacterAnimator.SetBool("Dash", State == PlayerState.Dash);
-            CharacterAnimator.SetBool("IsWallRunning", wallrun.isWallRunning);
             CharacterAnimator.SetBool("Slide", Input.Slide);
             CharacterAnimator.SetBool("Jump", Input.Jump);
             CharacterAnimator.SetBool("flying", Input.Jet);
@@ -782,22 +781,22 @@ namespace Parkour
         }
 
         // specialSkills___WallRun
-        void WallRun()
-        {
+       // void WallRun()
+       // {
+       //
+       //     if (Input.WallRun)
+       //     {
+       //         wallrun.ActivateWallRun = true;
+       //     }
+       //     else
+       //     {
+       //
+       //         wallrun.ActivateWallRun = false;
+       //
+       //     }
+       //     cameraHolder.transform.Rotate(0, 0, wallrun.curCamAngle);
 
-            if (Input.WallRun)
-            {
-                wallrun.ActivateWallRun = true;
-            }
-            else
-            {
-
-                wallrun.ActivateWallRun = false;
-
-            }
-            cameraHolder.transform.Rotate(0, 0, wallrun.curCamAngle);
-
-        }
+        //}
         //Special Skills__ Dash
 
 
