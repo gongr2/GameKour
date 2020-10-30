@@ -1,14 +1,13 @@
 ﻿//using System;
 //using System.Collections;
 //using System.Runtime.CompilerServices;
-using Microsoft.Win32.SafeHandles;
+//using Microsoft.Win32.SafeHandles;
 using Photon.Pun;
-using System.ComponentModel;
-using UnityEditor.UIElements;
+//using System.ComponentModel;
+//using UnityEditor.UIElements;
 //using Photon.Pun.UtilityScripts;
 //using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UIElements;
 //using UnityEngine.UIElements;
 
 namespace Parkour
@@ -739,6 +738,7 @@ namespace Parkour
             {
                 print("FixPullUpProve");
                 transform.position = Edge.transform.position + GrabOffset + transform.forward * -0.3f;
+                //transform.position = Edge.transform.position + GrabOffset + transform.forward * -0.3f+Edge.transform.up * 1.7f;
             }
             cameraHolder.transform.localPosition = Vector3.Lerp(cameraHolder.transform.localPosition, new Vector3(0, 3f, 0), 5f * Time.deltaTime);
 
@@ -750,8 +750,21 @@ namespace Parkour
             {
                 print("Teleport the Player to right position");
                 transform.position = Edge.transform.position + GrabOffset + transform.forward * 0.4f + transform.up * 2.3f;
+                
+                PV.RPC("TeleportPlayerRPC", RpcTarget.Others, new object[] { transform.position});
+               
             }
         }
+
+
+
+        [PunRPC]
+        public void TeleportPlayerRPC(Vector3 position) {
+            transform.position = position;
+        }
+
+
+
 
         public void FinishPullUp()
         {
